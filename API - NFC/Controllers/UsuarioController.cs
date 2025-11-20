@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_NFC.Data;
 using API___NFC.Models;
+using BCrypt.Net;
 
 namespace API___NFC.Controllers
 {
@@ -96,8 +97,7 @@ namespace API___NFC.Controllers
             // ⚠️ SOLO ACTUALIZAR CONTRASEÑA SI SE ENVIÓ UNA NUEVA
             if (!string.IsNullOrWhiteSpace(usuario.Contraseña))
             {
-                existing.Contraseña = usuario.Contraseña;
-                // TODO: En producción, encriptar aquí: BCrypt.HashPassword(usuario.Contraseña)
+                existing.Contraseña = HashPasswordIfNeeded(usuario.Contraseña);
             }
 
             await _context.SaveChangesAsync();
@@ -111,6 +111,11 @@ namespace API___NFC.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (string.IsNullOrWhiteSpace(usuario.Contraseña))
+            {
+                return BadRequest("La contraseña es requerida y no puede estar vacía.");
+            }
+
             // 🔹 Validar duplicados
             if (await _context.Usuario.AnyAsync(u =>
                     u.NumeroDocumento == usuario.NumeroDocumento ||
@@ -122,6 +127,9 @@ namespace API___NFC.Controllers
             usuario.Estado ??= true;
             usuario.FechaCreacion = DateTime.Now;
             usuario.FechaActualizacion = DateTime.Now;
+
+            // 🔐 Hashear contraseña antes de guardar
+            usuario.Contraseña = HashPasswordIfNeeded(usuario.Contraseña);
 
             _context.Usuario.Add(usuario);
             await _context.SaveChangesAsync();
@@ -190,6 +198,25 @@ namespace API___NFC.Controllers
         private bool UsuarioExists(int id)
         {
             return _context.Usuario.Any(e => e.IdUsuario == id);
+        }
+
+        private static string HashPasswordIfNeeded(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("La contraseña no puede estar vacía.", nameof(password));
+            }
+
+            // Evitar doble hash si ya viene en formato BCrypt
+            return IsBcryptHash(password)
+                ? password
+                : BCrypt.HashPassword(password);
+        }
+
+        private static bool IsBcryptHash(string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) &&
+                   (value.StartsWith("$2a$") || value.StartsWith("$2b$") || value.StartsWith("$2y$"));
         }
     }
 }
