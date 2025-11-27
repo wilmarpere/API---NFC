@@ -31,8 +31,8 @@ namespace API___NFC.Models
         [Required, MaxLength(20)]
         public string Rol { get; set; }
 
-        [Required, MaxLength(100)]
-        public string CodigoBarras { get; set; }
+        [ MaxLength(100)]
+        public string? CodigoBarras { get; set; } = null;
 
         [MaxLength(100)]
         public string? Cargo { get; set; } 

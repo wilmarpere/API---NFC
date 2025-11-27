@@ -32,7 +32,7 @@ namespace API___NFC.Models
 
         public string? Descripcion { get; set; }  
 
-        [MaxLength(255)]
+        [MaxLength(2000)]
         public string? ImagenUrl { get; set; }  
 
         public bool? Estado { get; set; }

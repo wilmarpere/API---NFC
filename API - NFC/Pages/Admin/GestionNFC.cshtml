@@ -6,46 +6,94 @@
 
 <div class="container-fluid mt-4">
     <div class="row">
-        <!-- Columna Principal de Acciones -->
+        <!-- Columna Principal -->
         <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4><i class="fas fa-id-card-alt me-2"></i>Grabación y Limpieza de Tags</h4>
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-id-card-alt me-2"></i>Gestión de Tags NFC</h4>
                 </div>
                 <div class="card-body">
-                    <!-- Sección de Escritura -->
-                    <div class="mb-4 p-3 border rounded">
-                        <h5 class="mb-3">1. Grabar un Tag</h5>
+
+                    <!-- 1️⃣ Selección de tipo de persona -->
+                    <div class="mb-4 border rounded p-3">
+                        <h5><i class="fas fa-user-tag me-2"></i>Seleccionar Tipo</h5>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tipoPersona" id="radioAprendiz" value="Aprendiz">
+                            <label class="form-check-label" for="radioAprendiz">Aprendiz</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tipoPersona" id="radioUsuario" value="Usuario">
+                            <label class="form-check-label" for="radioUsuario">Usuario / Administrador</label>
+                        </div>
+                    </div>
+
+                    <!-- 2️⃣ Asignación del Tag y registro del dispositivo -->
+                    <div class="mb-4 border rounded p-3">
+                        <h5><i class="fas fa-id-badge me-2"></i>Asignar Tag</h5>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="selectUsuario" class="form-label">Seleccionar Usuario</label>
-                                <select id="selectUsuario" class="form-select">
-                                    <option selected disabled>Cargando usuarios...</option>
+                                <label for="selectPersona" class="form-label">Seleccione Persona</label>
+                                <select id="selectPersona" class="form-select" disabled>
+                                    <option selected disabled>Seleccione tipo de persona</option>
                                 </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="selectTipoElemento" class="form-label">Tipo de Dispositivo</label>
+                                <select id="selectTipoElemento" class="form-select" disabled>
+                                    <option selected disabled>Seleccione tipo de dispositivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Detalles del dispositivo -->
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-6">
+                                <label for="txtMarca" class="form-label">Marca</label>
+                                <input type="text" id="txtMarca" class="form-control" placeholder="Ej: HP, Dell..." disabled>
                             </div>
                             <div class="col-md-6">
-                                <label for="selectElemento" class="form-label">Seleccionar Elemento</label>
-                                <select id="selectElemento" class="form-select" disabled>
-                                    <option selected disabled>Primero seleccione un usuario</option>
-                                </select>
+                                <label for="txtModelo" class="form-label">Modelo</label>
+                                <input type="text" id="txtModelo" class="form-control" placeholder="Ej: ProBook 450" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="txtSerial" class="form-label">Serial</label>
+                                <input type="text" id="txtSerial" class="form-control" placeholder="Número de serie" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="txtDescripcion" class="form-label">Descripción</label>
+                                <input type="text" id="txtDescripcion" class="form-control" placeholder="Detalles adicionales" disabled>
+                            </div>
+
+                            <!-- 📸 Foto del dispositivo -->
+                            <div class="col-md-6">
+                                <label for="fileFoto" class="form-label">Foto del Dispositivo</label>
+                                <input type="file" id="fileFoto" class="form-control" accept="image/*" capture="environment" disabled>
+                                <small class="text-muted">Toma una foto o selecciona una imagen del dispositivo.</small>
+                                <div class="mt-2 text-center">
+                                    <img id="previewFoto" class="img-thumbnail" style="max-height:150px; display:none;" />
+                                </div>
                             </div>
                         </div>
+
                         <div class="alert alert-light mt-3" role="alert">
-                            <strong>Datos a grabar:</strong> <span id="data-to-write-display" class="font-monospace text-primary">N/A</span>
+                            <strong>Datos a grabar:</strong>
+                            <span id="data-to-write-display" class="font-monospace text-primary">N/A</span>
                         </div>
+
                         <div class="d-grid">
-                            <button id="btnGrabar" class="btn btn-primary btn-lg" disabled>
+                            <button id="btnGrabar" class="btn btn-success btn-lg" disabled>
                                 <i class="fas fa-save me-2"></i>Preparar para Grabar
                             </button>
                         </div>
                     </div>
 
-                    <!-- Sección de Limpieza -->
+                    <!-- 3️⃣ Limpieza -->
                     <div class="p-3 border rounded">
-                        <h5 class="mb-3">2. Otras Acciones</h5>
+                        <h5><i class="fas fa-eraser me-2"></i>Otras acciones</h5>
                         <div class="d-grid">
                             <button id="btnLimpiar" class="btn btn-danger">
-                                <i class="fas fa-eraser me-2"></i>Preparar para Limpiar Tag
+                                <i class="fas fa-trash-alt me-2"></i>Preparar para Limpiar Tag
                             </button>
                         </div>
                     </div>
@@ -53,24 +101,23 @@
             </div>
         </div>
 
-        <!-- Columna de Estado y Lectura -->
+        <!-- Panel Estado -->
         <div class="col-lg-4">
-            <div class="card position-sticky" style="top: 1rem;">
-                <div class="card-header">
-                    <h5><i class="fas fa-satellite-dish me-2"></i>Estado del Lector</h5>
+            <div class="card position-sticky shadow" style="top:1rem;">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-satellite-dish me-2"></i>Estado del Agente</h5>
                 </div>
                 <div class="card-body">
                     <div id="status-panel" class="alert alert-secondary text-center">
                         <div id="status-message">Conectando con el agente...</div>
                     </div>
-
-                    <h6 class="mt-4">Último Tag Leído</h6>
+                    <h6 class="mt-4">Último Tag leído</h6>
                     <div id="last-read-panel" class="p-2 bg-light rounded">
-                        <p class="text-muted text-center small mb-0">No se ha leído ningún tag en esta sesión.</p>
+                        <p class="text-muted text-center small mb-0">No se ha leído ningún tag.</p>
                     </div>
                     <div class="d-grid mt-3">
                         <button id="btnLeer" class="btn btn-info">
-                            <i class="fas fa-sync-alt me-2"></i>Activar Modo Lectura
+                            <i class="fas fa-sync-alt me-2"></i>Modo Lectura
                         </button>
                     </div>
                 </div>
@@ -82,150 +129,205 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // --- URLs de la API ---
-            const getUsersUrl = '@Url.Action("GetAllUsers", "Gestion")';
-            const getElementsUrl = '@Url.Action("GetElementsByUser", "Gestion")';
+        document.addEventListener('DOMContentLoaded', async () => {
+            const apiBase = `${window.location.origin}/api`;
 
-            // --- Referencias al DOM ---
-            const selectUsuario = document.getElementById('selectUsuario');
-            const selectElemento = document.getElementById('selectElemento');
-            const dataToWriteDisplay = document.getElementById('data-to-write-display');
-            const btnGrabar = document.getElementById('btnGrabar');
-            const btnLimpiar = document.getElementById('btnLimpiar');
-            const btnLeer = document.getElementById('btnLeer');
-            const statusPanel = document.getElementById('status-panel');
-            const statusMessage = document.getElementById('status-message');
-            const lastReadPanel = document.getElementById('last-read-panel');
+            const tipoRadios = document.getElementsByName("tipoPersona");
+            const selectPersona = document.getElementById("selectPersona");
+            const selectTipoElemento = document.getElementById("selectTipoElemento");
+            const txtMarca = document.getElementById("txtMarca");
+            const txtModelo = document.getElementById("txtModelo");
+            const txtSerial = document.getElementById("txtSerial");
+            const txtDescripcion = document.getElementById("txtDescripcion");
+            const fileFoto = document.getElementById("fileFoto");
+            const previewFoto = document.getElementById("previewFoto");
+            const dataDisplay = document.getElementById("data-to-write-display");
+            const btnGrabar = document.getElementById("btnGrabar");
+            const btnLimpiar = document.getElementById("btnLimpiar");
+            const btnLeer = document.getElementById("btnLeer");
+            const statusPanel = document.getElementById("status-panel");
+            const statusMessage = document.getElementById("status-message");
+            const lastReadPanel = document.getElementById("last-read-panel");
 
-            // --- Lógica de la Interfaz ---
-            const updateStatus = (message, type = 'info') => {
-                const alertClasses = {
-                    info: 'alert-info',
-                    success: 'alert-success',
-                    error: 'alert-danger',
-                    warning: 'alert-warning'
-                };
-                statusPanel.className = `alert ${alertClasses[type]} text-center`;
-                statusMessage.innerHTML = message;
+            let fotoUrl = null;
+
+            const updateStatus = (msg, type='info')=>{
+                const map={info:'alert-info',success:'alert-success',error:'alert-danger',warning:'alert-warning'};
+                statusPanel.className=`alert ${map[type]||'alert-info'} text-center`;
+                statusMessage.textContent=msg;
             };
 
-            const loadUsers = async () => {
-                try {
-                    const response = await fetch(getUsersUrl);
-                    if (!response.ok) throw new Error('No se pudieron cargar los usuarios.');
-                    const users = await response.json();
-
-                    selectUsuario.innerHTML = '<option selected disabled>-- Seleccione un usuario --</option>';
-                    users.forEach(user => {
-                        const option = new Option(`${user.nombre} (ID: ${user.idUsuario})`, user.idUsuario);
-                        selectUsuario.add(option);
-                    });
-                } catch (error) {
-                    updateStatus(error.message, 'error');
-                }
+            // 📤 Subir imagen al backend
+            const uploadPhoto = async (file) => {
+                const formData = new FormData();
+                formData.append("file", file);
+                const res = await fetch(`${apiBase}/Elementoes/upload-image`, {
+                    method: "POST",
+                    body: formData
+                });
+                if (!res.ok) throw new Error("Error al subir imagen");
+                const data = await res.json();
+                return data.imageUrl;
             };
 
-            const loadElements = async (userId) => {
-                selectElemento.innerHTML = '<option selected disabled>Cargando elementos...</option>';
-                selectElemento.disabled = true;
-                btnGrabar.disabled = true;
-
-                try {
-                    const response = await fetch(`${getElementsUrl}?idUsuario=${userId}`);
-                    if (!response.ok) throw new Error('No se pudieron cargar los elementos.');
-                    const elements = await response.json();
-
-                    selectElemento.innerHTML = '<option selected disabled>-- Seleccione un elemento --</option>';
-                    if (elements.length > 0) {
-                        elements.forEach(element => {
-                            const option = new Option(`${element.nombreElemento} (ID: ${element.idElemento})`, element.idElemento);
-                            selectElemento.add(option);
-                        });
-                        selectElemento.disabled = false;
-                    } else {
-                        selectElemento.innerHTML = '<option selected disabled>Este usuario no tiene elementos</option>';
+            // 📸 Vista previa
+            fileFoto.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        previewFoto.src = ev.target.result;
+                        previewFoto.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                    try {
+                        fotoUrl = await uploadPhoto(file);
+                        updateStatus("✅ Imagen subida correctamente.", "success");
+                    } catch (err) {
+                        updateStatus("❌ Error al subir imagen: " + err.message, "error");
                     }
-                } catch (error) {
-                    updateStatus(error.message, 'error');
                 }
-            };
-
-            const updateDataToWrite = () => {
-                const userId = selectUsuario.value;
-                const elementId = selectElemento.value;
-
-                if (userId && elementId && userId !== '-- Seleccione un usuario --' && elementId !== '-- Seleccione un elemento --') {
-                    const dataString = `${userId},${elementId}`;
-                    dataToWriteDisplay.textContent = dataString;
-                    btnGrabar.disabled = false;
-                } else {
-                    dataToWriteDisplay.textContent = 'N/A';
-                    btnGrabar.disabled = true;
-                }
-            };
-
-            // --- Event Listeners ---
-            selectUsuario.addEventListener('change', () => {
-                const userId = selectUsuario.value;
-                loadElements(userId);
-                updateDataToWrite();
             });
 
-            selectElemento.addEventListener('change', updateDataToWrite);
-
-            // --- Conexión y Lógica de SignalR ---
             const connection = new signalR.HubConnectionBuilder().withUrl("/nfcHub").withAutomaticReconnect().build();
 
-            btnGrabar.addEventListener('click', () => {
-                const data = dataToWriteDisplay.textContent;
-                if (data && data !== 'N/A') {
-                    connection.invoke('SetAgentModeToWrite', data);
-                    updateStatus('Enviando solicitud de grabación al agente...', 'info');
+            const loadPersonas=async(tipo)=>{
+                selectPersona.disabled=true;
+                selectPersona.innerHTML='<option selected disabled>Cargando...</option>';
+                try{
+                    const url=tipo==="Aprendiz"?`${apiBase}/Aprendiz`:`${apiBase}/Usuario`;
+                    const res=await fetch(url);
+                    const data=await res.json();
+                    const lista=tipo==="Aprendiz"?data:data.filter(u=>u.rol==="Administrador"||u.rol==="Funcionario");
+                    selectPersona.innerHTML='<option selected disabled>-- Seleccione --</option>';
+                    lista.forEach(p=>{
+                        const nombre=(p.nombre&&p.apellido)?`${p.nombre} ${p.apellido}`:p.nombreCompleto||'Sin nombre';
+                        selectPersona.add(new Option(`${nombre} (ID:${p.idAprendiz||p.idUsuario})`,p.idAprendiz||p.idUsuario));
+                    });
+                    selectPersona.disabled=false;
+                }catch{updateStatus("❌ Error al cargar personas","error");}
+            };
+
+            const loadTiposElemento=async()=>{
+                selectTipoElemento.disabled=true;
+                selectTipoElemento.innerHTML='<option selected disabled>Cargando tipos...</option>';
+                try{
+                    const res=await fetch(`${apiBase}/TipoElementoes`);
+                    const tipos=await res.json();
+                    selectTipoElemento.innerHTML='<option selected disabled>-- Seleccione tipo de dispositivo --</option>';
+                    tipos.forEach(t=>selectTipoElemento.add(new Option(t.tipo,t.idTipoElemento)));
+                    [txtMarca,txtModelo,txtSerial,txtDescripcion,fileFoto].forEach(el=>el.disabled=false);
+                    selectTipoElemento.disabled=false;
+                }catch{updateStatus("❌ Error al cargar tipos de elemento","error");}
+            };
+
+            const updateDataToWrite=()=>{
+                const tipo=document.querySelector('input[name="tipoPersona"]:checked')?.value;
+                const personaId=selectPersona.value;
+                if(tipo&&personaId){
+                    const tipoNum=tipo==="Aprendiz"?1:2;
+                    const dataString=`${tipoNum},${personaId}`;
+                    dataDisplay.textContent=dataString;
+                    btnGrabar.disabled=false;
+                }else{
+                    dataDisplay.textContent="N/A";
+                    btnGrabar.disabled=true;
                 }
-            });
+            };
 
-            btnLimpiar.addEventListener('click', () => {
-                connection.invoke('SetAgentModeToClean');
-                updateStatus('Enviando solicitud de limpieza al agente...', 'info');
-            });
+                 const registrarElementoYTag = async (codigoTag, tipoPersona, idPersona, idTipoElemento) => {
+            try {
+                const elementoData = {
+                    idTipoElemento: parseInt(idTipoElemento),
+                    idPropietario: parseInt(idPersona),
+                    tipoPropietario: tipoPersona,
+                    marca: txtMarca.value.trim(),
+                    modelo: txtModelo.value.trim(),
+                    serial: txtSerial.value.trim(),
+                    descripcion: txtDescripcion.value.trim(),
+                    imagenUrl: fotoUrl,
+                    estado: true,
+                    codigoNFC: codigoTag // ✅ Guarda el mismo código del tag
+                };
 
-            btnLeer.addEventListener('click', () => {
-                connection.invoke('SetAgentModeToRead');
-                updateStatus('Agente en modo de Lectura Continua.', 'info');
-            });
+                const resElem = await fetch(`${apiBase}/Elementoes`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(elementoData)
+                });
 
-            // Handlers para mensajes desde el agente
-            connection.on('AgentStatusUpdate', (message, type) => {
-                updateStatus(message, type);
-            });
-
-            connection.on('OperationSuccess', (message, verifiedData) => {
-                updateStatus(message, 'success');
-                lastReadPanel.innerHTML = `<span class="font-monospace">${verifiedData || '(Tag Vacío)'}</span>`;
-            });
-
-            connection.on('OperationFailed', (errorMessage) => {
-                updateStatus(errorMessage, 'error');
-            });
-
-             connection.on("RecibirDatosTag", (tagData) => {
-                lastReadPanel.innerHTML = `Datos leídos: <span class="font-monospace text-success">${tagData}</span>`;
-            });
-
-            // Iniciar conexión y la página
-            async function start() {
-                try {
-                    await connection.start();
-                    updateStatus('Conectado al agente. Listo para operar.', 'success');
-                    loadUsers();
-                } catch (err) {
-                    console.error(err);
-                    updateStatus('Error de conexión con el agente.', 'error');
+                if (!resElem.ok) {
+                    const msg = await resElem.text();
+                    updateStatus("⚠️ Error al registrar elemento: " + msg, "warning");
+                    return;
                 }
+
+                const dataElem = await resElem.json();
+
+                const tagData = {
+                    codigoTag,
+                    tipoPersona,
+                    idPersona: parseInt(idPersona),
+                    idElemento: dataElem.idElemento
+                };
+
+                const resTag = await fetch(`${apiBase}/TagAsignado`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(tagData)
+                });
+
+                if (resTag.ok)
+                    updateStatus("✅ Tag y elemento registrados correctamente", "success");
+                else
+                    updateStatus("⚠️ Elemento guardado pero error al registrar tag", "warning");
+
+            } catch (err) {
+                updateStatus("❌ Error: " + err.message, "error");
             }
+        };
 
-            start();
+
+            tipoRadios.forEach(r=>r.addEventListener('change',async e=>{
+                await loadPersonas(e.target.value);await loadTiposElemento();updateDataToWrite();
+            }));
+
+            selectPersona.addEventListener('change',updateDataToWrite);
+            selectTipoElemento.addEventListener('change',updateDataToWrite);
+
+            btnGrabar.addEventListener('click',async()=>{
+                const tipo=document.querySelector('input[name="tipoPersona"]:checked')?.value;
+                const idPersona=selectPersona.value;
+                const idTipoElemento=selectTipoElemento.value;
+                const data=dataDisplay.textContent;
+                if(data==="N/A")return;
+                await connection.invoke("SetAgentModeToWrite",data);
+                updateStatus("⏳ Preparando agente para grabar tag...","info");
+                window.__tagContext={tipo,idPersona,idTipoElemento};
+            });
+
+            btnLimpiar.addEventListener('click',async()=>{
+                await connection.invoke("SetAgentModeToClean");
+                updateStatus("🧹 Agente listo para limpiar tag","warning");
+            });
+
+            btnLeer.addEventListener('click',async()=>{
+                await connection.invoke("SetAgentModeToRead");
+                updateStatus("📖 Modo lectura activado","info");
+            });
+
+            connection.on("AgentStatusUpdate",(msg,type)=>updateStatus(msg,type));
+            connection.on("OperationFailed",(msg)=>updateStatus(msg,"error"));
+            connection.on("RecibirDatosTag",(tagData)=>lastReadPanel.innerHTML=`<p class='text-primary font-monospace'>${tagData}</p>`);
+            connection.on("OperationSuccess",async(msg,verifiedData)=>{
+                updateStatus(msg,"success");
+                lastReadPanel.innerHTML=`<p class='text-success font-monospace'>${verifiedData}</p>`;
+                const ctx=window.__tagContext;
+                if(ctx){await registrarElementoYTag(verifiedData,ctx.tipo,ctx.idPersona,ctx.idTipoElemento);window.__tagContext=null;}
+            });
+
+            try{await connection.start();updateStatus("✅ Conectado al agente NFC.","success");}
+            catch{updateStatus("❌ Error al conectar con el agente.","error");}
         });
     </script>
 }

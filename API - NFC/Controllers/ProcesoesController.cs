@@ -50,6 +50,110 @@ namespace API___NFC.Controllers
             return Ok(proceso);
         }
 
+        // 🆕 NUEVO: GET: api/Procesoes/activo/{tipoPersona}/{idPersona}
+        // Este endpoint busca el último proceso activo (sin salida registrada) de una persona
+        [HttpGet("activo/{tipoPersona}/{idPersona}")]
+        public async Task<ActionResult<object>> GetProcesoActivo(string tipoPersona, int idPersona)
+        {
+            Console.WriteLine($"🔍 Buscando proceso activo para {tipoPersona} ID: {idPersona}");
+
+            // Validar tipo de persona
+            if (tipoPersona != "Usuario" && tipoPersona != "Aprendiz")
+            {
+                return BadRequest(new { message = "TipoPersona debe ser 'Usuario' o 'Aprendiz'." });
+            }
+
+            try
+            {
+                Proceso procesoActivo = null;
+
+                // 🔥 CORREGIDO: Buscar proceso según el tipo de persona
+                if (tipoPersona == "Aprendiz")
+                {
+                    // Buscar el último proceso del aprendiz
+                    var ultimoProceso = await _context.Proceso
+                        .Where(p => p.IdAprendiz == idPersona && p.TipoPersona == "Aprendiz")
+                        .Include(p => p.TipoProceso)
+                        .OrderByDescending(p => p.IdProceso)
+                        .FirstOrDefaultAsync();
+
+                    if (ultimoProceso != null)
+                    {
+                        // Verificar si ya tiene salida registrada en RegistroNFC
+                        var tieneSalida = await _context.RegistroNFC
+                            .AnyAsync(r => r.IdAprendiz == idPersona &&
+                                          r.TipoRegistro == "Salida" &&
+                                          r.FechaRegistro >= ultimoProceso.TimeStampEntradaSalida);
+
+                        if (!tieneSalida)
+                        {
+                            procesoActivo = ultimoProceso;
+                        }
+                    }
+                }
+                else if (tipoPersona == "Usuario")
+                {
+                    // Buscar el último proceso del usuario
+                    var ultimoProceso = await _context.Proceso
+                        .Where(p => p.IdUsuario == idPersona && p.TipoPersona == "Usuario")
+                        .Include(p => p.TipoProceso)
+                        .OrderByDescending(p => p.IdProceso)
+                        .FirstOrDefaultAsync();
+
+                    if (ultimoProceso != null)
+                    {
+                        // Verificar si ya tiene salida registrada en RegistroNFC
+                        var tieneSalida = await _context.RegistroNFC
+                            .AnyAsync(r => r.IdUsuario == idPersona &&
+                                          r.TipoRegistro == "Salida" &&
+                                          r.FechaRegistro >= ultimoProceso.TimeStampEntradaSalida);
+
+                        if (!tieneSalida)
+                        {
+                            procesoActivo = ultimoProceso;
+                        }
+                    }
+                }
+
+                if (procesoActivo == null)
+                {
+                    Console.WriteLine("❌ No se encontró proceso activo");
+                    return NotFound(new { message = "No hay proceso activo para este usuario" });
+                }
+
+                Console.WriteLine($"✅ Proceso activo encontrado: {procesoActivo.IdProceso}");
+
+                // 🔥 CORREGIDO: Consultar RegistroNFC por separado
+                var registrosDelProceso = await _context.RegistroNFC
+                    .Where(r => (tipoPersona == "Aprendiz" ? r.IdAprendiz == idPersona : r.IdUsuario == idPersona) &&
+                                r.FechaRegistro >= procesoActivo.TimeStampEntradaSalida)
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    procesoActivo.IdProceso,
+                    procesoActivo.TipoPersona,
+                    procesoActivo.IdAprendiz,
+                    procesoActivo.IdUsuario,
+                    procesoActivo.IdTipoProceso,
+                    procesoActivo.TimeStampEntradaSalida,
+                    procesoActivo.Observaciones,
+                    TieneIngreso = registrosDelProceso.Any(r => r.TipoRegistro == "Ingreso"),
+                    TieneSalida = registrosDelProceso.Any(r => r.TipoRegistro == "Salida"),
+                    CantidadRegistros = registrosDelProceso.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    message = "Error al buscar proceso activo.",
+                    detalle = ex.Message
+                });
+            }
+        }
+
         // ✅ PUT: api/Procesoes/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProceso(int id, [FromBody] Proceso proceso)
