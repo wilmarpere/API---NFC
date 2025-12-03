@@ -102,18 +102,36 @@ namespace API___NFC.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
-        // ✅ POST: api/Elementoes
         [HttpPost]
         public async Task<ActionResult<Elemento>> PostElemento(Elemento elemento)
         {
-            // 🔹 Validar duplicados antes de guardar
-            if (await _context.Elemento.AnyAsync(e => e.Serial == elemento.Serial))
-                return Conflict("Ya existe un elemento con ese número de serie.");
+            // Normaliza entradas
+            elemento.Serial = elemento.Serial?.Trim().ToUpper();
+            elemento.CodigoNFC = string.IsNullOrWhiteSpace(elemento.CodigoNFC)
+                ? null
+                : elemento.CodigoNFC.Trim().ToUpper();
 
-            if (!string.IsNullOrEmpty(elemento.CodigoNFC) &&
-                await _context.Elemento.AnyAsync(e => e.CodigoNFC == elemento.CodigoNFC))
+            // 🔹 Evita duplicados de Serial
+            if (!string.IsNullOrWhiteSpace(elemento.Serial) &&
+                await _context.Elemento.AnyAsync(e => e.Serial == elemento.Serial && e.Estado == true))
+            {
+                return Conflict("Ya existe un elemento con ese número de serie.");
+            }
+
+            // 🔹 Evita duplicados de NFC solo si tiene valor (no cuando es null)
+            if (!string.IsNullOrWhiteSpace(elemento.CodigoNFC) &&
+                await _context.Elemento.AnyAsync(e => e.CodigoNFC == elemento.CodigoNFC && e.Estado == true))
+            {
                 return Conflict("Ya existe un elemento con ese código NFC.");
+            }
+
+            // 🔹 Asegura que no explote el UNIQUE INDEX por valores NULL
+            // Si el campo CodigoNFC es nulo y el índice aún exige unicidad,
+            // genera un valor temporal interno para poder insertar sin romper.
+            if (string.IsNullOrWhiteSpace(elemento.CodigoNFC))
+            {
+                elemento.CodigoNFC = $"TEMP-{Guid.NewGuid().ToString().Substring(0, 8)}";
+            }
 
             elemento.FechaCreacion = DateTime.Now;
             elemento.FechaActualizacion = DateTime.Now;
@@ -122,8 +140,15 @@ namespace API___NFC.Controllers
             _context.Elemento.Add(elemento);
             await _context.SaveChangesAsync();
 
+            // 🔹 Limpia el código temporal antes de devolver al cliente (no visible)
+            if (elemento.CodigoNFC.StartsWith("TEMP-"))
+                elemento.CodigoNFC = null;
+
             return CreatedAtAction(nameof(GetElemento), new { id = elemento.IdElemento }, elemento);
         }
+
+
+
 
         // ✅ DELETE (Soft Delete): api/Elementoes/5
         [HttpDelete("{id}")]
@@ -213,6 +238,43 @@ namespace API___NFC.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Message = "NFC asignado al elemento.", elemento.IdElemento, elemento.CodigoNFC });
         }
+        // ✅ POST: api/Elementoes/upload-image
+        [HttpPost("upload-image")]
+        [RequestSizeLimit(10_000_000)] // (opcional) 10 MB máximo
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "No se recibió ningún archivo." });
+
+            try
+            {
+                // 📁 Crea carpeta /wwwroot/uploads si no existe
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                // 🖼️ Genera nombre único
+                var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                // 🧩 Copia el archivo
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // 🔗 Construye URL pública
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var imageUrl = $"{baseUrl}/uploads/{fileName}";
+
+                return Ok(new { imageUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al subir la imagen.", error = ex.Message });
+            }
+        }
+
 
         // POST api/Elementoes/{id}/clear-nfc
         [HttpPost("{id}/clear-nfc")]
@@ -239,6 +301,26 @@ namespace API___NFC.Controllers
             if (elemento == null) return NotFound("No existe un elemento con ese CodigoNFC.");
             return Ok(elemento);
         }
+
+        // ✅ GET api/Elementoes/byOwner/{tipo}/{idPropietario}
+        [HttpGet("byOwner/{tipo}/{idPropietario}")]
+        public async Task<IActionResult> GetByOwner(string tipo, int idPropietario)
+        {
+            if (string.IsNullOrWhiteSpace(tipo))
+                return BadRequest("Debe especificar el tipo de propietario.");
+
+            var elementos = await _context.Elemento
+                .Include(e => e.TipoElemento)
+                .AsNoTracking()
+                .Where(e => e.IdPropietario == idPropietario && e.TipoPropietario == tipo && e.Estado == true)
+                .ToListAsync();
+
+            if (elementos == null || elementos.Count == 0)
+                return NotFound(new { Message = "No se encontraron elementos registrados para este propietario." });
+
+            return Ok(elementos);
+        }
+
 
     }
 }

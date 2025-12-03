@@ -21,6 +21,8 @@ namespace API_NFC.Data
         public DbSet<TipoElemento> TipoElemento { get; set; }
         public DbSet<TipoProceso> TipoProceso { get; set; }
         public DbSet<Usuario> Usuario { get; set; }
+        public DbSet<TagAsignado> TagAsignado { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,549 +1,1170 @@
 ﻿@page
 @model API___NFC.Pages.TerminalModel
 @{
-    ViewData["Title"] = "Dashboard Operativo";
+    ViewData["Title"] = "NFC HUB (Terminal)";
     Layout = "_AdminLayout";
 }
+
 <style>
     :root {
-        --color-sena: #00963f;
-        --color-panel: #ffffff;
-        --color-borde: #dee2e6;
-        --color-texto: #212529;
+        --sena-verde: #39A900;
+        --sena-azul: #0B7CBD;
+        --sena-naranja: #FF6600;
+        --borde-suave: #dee2e6;
+        --fondo: #f8f9fa;
+        --texto: #212529;
+        --sombra: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+        --radio: 0.75rem;
     }
 
-    /* --- ESTRUCTURA GENERAL --- */
-    .terminal-layout {
-        background-color: #f8f9fa;
+    body {
+        background-color: var(--fondo);
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: var(--texto);
     }
 
     .card {
-        border-radius: 10px;
+        border-radius: var(--radio);
+        box-shadow: var(--sombra);
+        transition: all 0.2s ease-in-out;
     }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
 
     .card-header {
-        font-size: 0.95rem;
+        font-weight: 600;
+        border: none;
+        color: #fff;
+        padding: 1rem;
+        font-size: 1rem;
     }
 
-    /* --- PERFIL --- */
-    #user-profile-content {
-        color: var(--color-sena);
-        font-weight: 500;
+        .card-header.blue {
+            background: linear-gradient(135deg, var(--sena-azul), #1d7ed6);
+        }
+
+        .card-header.green {
+            background: linear-gradient(135deg, var(--sena-verde), #4bbb3f);
+        }
+
+    .profile-card {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        padding: 1rem;
     }
 
-    /* --- PANELES --- */
-    #registered-elements-list .text-muted,
-    #detected-elements-list .text-muted {
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, var(--sena-verde), var(--sena-azul));
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        color: #fff;
+        box-shadow: var(--sombra);
+        border: 3px solid #fff;
+    }
+
+    .profile-details {
+        background: #fff;
+        border-left: 4px solid var(--sena-verde);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .device-item {
+        display: flex;
+        background: #fff;
+        padding: 1rem;
+        border-radius: var(--radio);
+        border: 1px solid var(--borde-suave);
+        margin-bottom: 0.75rem;
+        gap: 1rem;
+        align-items: center;
+        transition: 0.2s ease;
+    }
+
+        .device-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--sombra);
+        }
+
+    .device-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 0.5rem;
+        background: #e7f1fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        color: var(--sena-azul);
+    }
+
+    .device-name {
+        font-weight: 600;
+        color: var(--sena-azul);
+    }
+
+    .device-details {
         font-size: 0.85rem;
+        color: #6c757d;
     }
 
-    #registered-elements-list,
-    #detected-elements-list {
-        background-color: var(--color-panel);
-        border: 1px solid var(--color-borde);
-        border-radius: 6px;
-        min-height: 120px;
-    }
-
-    /* --- BOTONES --- */
-    .btn-primary {
-        background-color: var(--color-sena);
-        border-color: var(--color-sena);
-    }
-
-        .btn-primary:hover {
-            background-color: #007a34;
-            border-color: #007a34;
-        }
-
-    .btn-outline-danger {
-        border-width: 1.5px;
-    }
-
-    /* --- HISTORIAL --- */
     #history-list {
-        background-color: #fff;
-        border-radius: 6px;
-        border: 1px solid var(--color-borde);
-        padding: 8px;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 0.5rem;
     }
 
-    /* Tarjetas pequeñas del historial (Entrada / Salida) */
     .history-item {
-        border-radius: 6px;
-        padding: 6px 8px;
-        margin-bottom: 6px;
-        font-size: 0.8rem;
+        padding: 0.75rem 1rem;
+        background: #fff;
+        border-radius: 0.5rem;
+        border-left: 4px solid var(--sena-azul);
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
 
-        .history-item .tipo {
-            font-weight: 600;
-            color: #fff;
-            border-radius: 4px;
-            padding: 2px 6px;
-            margin-right: 4px;
+        .history-item.ingreso {
+            border-left-color: var(--sena-verde);
         }
 
-        .history-item.salida .tipo {
-            background-color: #0d6efd;
+        .history-item.salida {
+            border-left-color: var(--sena-naranja);
         }
 
-        .history-item.entrada .tipo {
-            background-color: #d63384;
-        }
-        #last-detected-item-content .element-item{
+    .toast {
+        border-radius: 0.75rem;
+        box-shadow: var(--sombra);
+    }
 
+    button.btn {
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: transform 0.15s ease-in-out;
+    }
+
+        button.btn:hover {
+            transform: scale(1.03);
+        }
+
+    input.form-control,
+    select.form-select {
+        border-radius: 0.5rem;
+        box-shadow: none;
+        transition: border-color 0.2s ease;
+    }
+
+        input.form-control:focus,
+        select.form-select:focus {
+            border-color: var(--sena-azul);
+            outline: none;
+        }
+
+    /* MODAL */
+    .modal-header {
+        background: var(--sena-azul);
+        color: #fff;
+        border-top-left-radius: var(--radio);
+        border-top-right-radius: var(--radio);
+    }
+
+    .modal-body h6 {
+        font-weight: 600;
+        color: var(--sena-azul);
+    }
+    /* MODAL DISEÑO MEJORADO */
+    .modal-content {
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: var(--sena-azul);
+        color: #fff;
+        border-bottom: none;
+        padding: 1rem 1.25rem;
+    }
+
+        .modal-header h5 {
+            margin: 0;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
-            gap:10px;
-        }
-        #last-detected-item-content .element-image{
-            width: 64px;
-            height: 64px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #dee2e6;
+            gap: 0.5rem;
         }
 
+    .modal-body {
+        background: #f8f9fa;
+        padding: 1.5rem;
+    }
 
+        .modal-body h6 {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--sena-azul);
+            margin-bottom: 0.5rem;
+        }
+
+    .modal-footer {
+        background-color: #f1f1f1;
+        border-top: none;
+        padding: 1rem 1.25rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    /* Caja usuario */
+    #modalUserData {
+        background-color: #e7f3ff;
+        border-left: 4px solid var(--sena-azul);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+    }
+
+    /* Lista dispositivos existentes */
+    #modal-user-devices {
+        background: #fff;
+        border: 1px solid var(--borde-suave);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+    }
+
+    /* Inputs */
+    input.form-control,
+    select.form-select {
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        box-shadow: none;
+    }
+
+        input.form-control:focus,
+        select.form-select:focus {
+            border-color: var(--sena-azul);
+            outline: none;
+        }
+
+    /* Botones */
+    .modal-footer .btn {
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+    }
+
+    /* Oculta el contenido mientras se valida el rol para evitar parpadeos */
+    html.guard-check-pending {
+        visibility: hidden;
+    }
 </style>
 
-<div class="container-fluid py-3 terminal-layout">
-    <div class="row g-2">
+<div class="container-fluid py-4">
 
-        <!-- PANEL IZQUIERDO: HISTORIAL -->
-        <div class="col-md-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-light text-center fw-bold text-secondary">
-                    Historial de Sesión
+    <!-- PERFIL (PARTE SUPERIOR) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="text-success"><i class="bi bi-person-badge"></i> Perfil</h5>
+                    <button id="btnNuevoProceso" class="btn btn-success">
+                        <i class="bi bi-broadcast-pin"></i> Iniciar lectura
+                    </button>
                 </div>
-                <div class="card-body p-2 overflow-auto" id="history-list" style="max-height: 80vh;">
-                    <p class="text-muted small text-center mt-3">Sin registros</p>
+                <div id="user-profile-content" class="mt-2 text-muted">
+                    Esperando lectura...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILA INFERIOR: HISTORIAL + DISPOSITIVOS -->
+    <div class="row g-3">
+
+        <!-- HISTORIAL -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header blue text-center">
+                    <i class="bi bi-clock-history"></i> Historial
+                </div>
+                <div id="history-list" class="card-body">
+                    <p class="text-center text-muted small">Sin registros</p>
                 </div>
             </div>
         </div>
 
-        <!-- PANEL CENTRAL -->
-        <div class="col-md-9 d-flex flex-column">
+        <!-- DISPOSITIVOS DEL USUARIO -->
+        <div class="col-md-4">
+            <div class="card h-100 p-3">
+                <h5 class="text-primary"><i class="bi bi-hdd"></i> Dispositivos del Usuario</h5>
+                <div id="user-owner-devices">
+                    <p class="text-center text-muted">Sin dispositivos.</p>
+                </div>
+            </div>
+        </div>
 
-            <!-- PERFIL -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center me-3" style="width:80px; height:80px;">
-                            <i class="bi bi-person fs-1 text-secondary"></i>
-                        </div>
-                        <div id="user-profile-content">
-                            <p class="text-muted m-0">Inicie un proceso para ver los datos.</p>
-                        </div>
-                    </div>
+        <!-- DISPOSITIVOS EN PROCESO -->
+        <div class="col-md-4">
+            <div class="card h-100 p-3">
+                <h5 class="text-primary"><i class="bi bi-cpu"></i> Dispositivos en Proceso</h5>
+                <div id="user-process-devices">
+                    <p class="text-center text-muted">No hay dispositivos en proceso.</p>
+                </div>
 
-                    <!-- BOTÓN INICIAR PROCESO NFC -->
-                    <button id="btnNuevoProceso" class="btn btn-success d-flex align-items-center gap-2">
-                        <i class="bi bi-broadcast-pin"></i>
-                        <span>Iniciar Proceso</span>
+                <div class="text-center mt-2">
+                    <button id="btnAddDevice" class="btn btn-outline-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalAddDevice" disabled>
+                        <i class="bi bi-plus-circle"></i> Agregar dispositivo
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- PANELES DE ELEMENTOS -->
-            <div class="row g-3 flex-grow-1">
-                <div class="col-md-6 d-flex flex-column">
-                    <div class="card shadow-sm border-success flex-grow-1">
-                        <div class="card-header bg-success bg-opacity-10 text-center text-success fw-bold">
-                            Dentro del CIMM
-                        </div>
-                        <div class="card-body p-2" id="registered-elements-list" style="overflow-y: auto;">
-                            <p class="text-muted text-center small mt-2">Inicie un proceso para ver los datos.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 d-flex flex-column">
-                    <div class="card shadow-sm border-warning flex-grow-1">
-                        <div class="card-header bg-warning bg-opacity-10 text-center text-warning fw-bold">
-                            Fuera del CIMM
-                        </div>
-                        <div class="card-body p-2" id="detected-elements-list" style="overflow-y: auto;">
-                            <p class="text-muted text-center small mt-2">Inicie un proceso para ver los datos.</p>
-                        </div>
-                    </div>
+    <!-- ÚLTIMO DETECTADO (DEBAJO DE TODO) -->
+    <div class="row g-3 mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header blue text-center">Último Detectado</div>
+                <div id="last-detected-item-content" class="card-body text-center">
+                    <p class="text-muted">Esperando escaneo...</p>
                 </div>
             </div>
-            
-            <!-- BOTONES DE CONTROL -->
-            <div class="d-flex justify-content-center gap-3 mt-4">
-                <button id="btnEjecutar" class="btn btn-primary px-4" disabled>
-                    <i class="bi bi-play-fill me-1"></i> Ejecutar
-                </button>
-                <button id="btnReiniciar" class="btn btn-outline-danger px-4" disabled>
-                    <i class="bi bi-x-circle me-1"></i> Cancelar
-                </button>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container" style="position:fixed;bottom:1rem;right:1rem;z-index:2000;"></div>
+</div>
+
+<!-- MODAL REGISTRAR DISPOSITIVO (100% Bootstrap) -->
+<div class="modal fade" id="modalAddDevice" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- Encabezado -->
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i class="bi bi-pc"></i> Registrar dispositivo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-            <div class="card shadow-sm mt-3">
-                <div class="card-header bg-light text-center fw-bold text-primary">
-                    último elemento detectado
+            <!-- Cuerpo -->
+            <div class="modal-body bg-light">
+
+                <!-- Datos del usuario -->
+                <div class="alert alert-info border-start border-4 border-primary rounded-3">
+                    <h6 class="mb-1"><i class="bi bi-person-lines-fill"></i> Usuario</h6>
+                    <div id="modalUserData" class="small text-muted">Cargando...</div>
                 </div>
-                <div class="card-body" id="last-detected-item-content">
-                    Esperando escaneo.....
+
+                <!-- Dispositivos existentes -->
+                <h6 class="text-primary mb-2"><i class="bi bi-hdd-network"></i> Dispositivos existentes</h6>
+                <div id="modal-user-devices" class="bg-white border rounded p-3 mb-3" style="max-height:200px; overflow-y:auto;">
+                    <p class="text-center text-muted small">Sin dispositivos.</p>
                 </div>
+
+                <hr>
+
+                <!-- Formulario nuevo dispositivo -->
+                <h6 class="text-success"><i class="bi bi-plus-circle"></i> Crear nuevo dispositivo</h6>
+                <form id="formDevice" class="row g-3 mt-2">
+
+                    <div class="col-md-6">
+                        <label for="selTipoElemento" class="form-label">Tipo *</label>
+                        <select id="selTipoElemento" class="form-select" required>
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="inpSerial" class="form-label">Serial *</label>
+                        <input id="inpSerial" type="text" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="inpMarca" class="form-label">Marca</label>
+                        <input id="inpMarca" type="text" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="inpModelo" class="form-label">Modelo</label>
+                        <input id="inpModelo" type="text" class="form-control">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="inpDescripcion" class="form-label">Descripción</label>
+                        <input id="inpDescripcion" type="text" class="form-control">
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer bg-white">
+                <button id="btnGuardarDevice" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Guardar
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
 
         </div>
     </div>
 </div>
 
-<!-- Contenedor para Toasts -->
-<div id="toast-container" style="position: fixed; bottom: 1rem; right: 1rem; z-index: 1050;"></div>
 
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
 
-@section Scripts {
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // --- URLs de la API (generadas por Razor para mayor robustez) ---
-            const getUserDataUrl = '@Url.Action("GetUserData", "Terminal")';
-            const finalizarProcesoUrl = '@Url.Action("FinalizarProceso", "Terminal")';
+<script>
+    (() => {
+        document.documentElement.classList.add('guard-check-pending');
 
-            // --- Estado de la Aplicación ---
-            let esProcesoActivo = false;
-            let usuarioActual = null;
-            let elementosDetectados = new Set();
-            let tipoProcesoSeleccionado = 'entrada';
+        function decodeJwt(token) {
+            if (!token) return null;
+            const parts = token.split('.');
+            if (parts.length !== 3) return null;
+            try {
+                const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(payload));
+            } catch {
+                return null;
+            }
+        }
 
-            // --- Referencias al DOM ---
-            const userProfileContent = document.getElementById('user-profile-content');
-            const registeredElementsList = document.getElementById('registered-elements-list');
-            const detectedElementsList = document.getElementById('detected-elements-list');
-            const lastDetectedItemContent = document.getElementById('last-detected-item-content');
-            const btnNuevoProceso = document.getElementById('btnNuevoProceso');
-            const btnEjecutar = document.getElementById('btnEjecutar');
-            const btnReiniciar = document.getElementById('btnReiniciar');
-            const radiosTipoProceso = document.querySelectorAll('input[name="tipoProceso"]');
-            const historyList = document.getElementById('history-list');
+        function obtenerRolActivo() {
+            const rawToken = localStorage.getItem('auth_token');
+            const decoded = decodeJwt(rawToken);
+            let localUser = null;
+            const storedUser = localStorage.getItem('user_info');
 
-            // --- Lógica de UI (Skeletons, Renderizado, Notificaciones) ---
-            const showToast = (message, type = 'info') => {
-                const toastId = 'toast-' + Date.now();
-                const toastColorClasses = {
-                    success: 'bg-success text-white',
-                    error: 'bg-danger text-white',
-                    info: 'bg-primary text-white',
-                    warning: 'bg-warning text-dark'
-                };
-                const toastHTML = `
-                    <div id="${toastId}" class="toast show mb-2 ${toastColorClasses[type]}" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="toast-body">${message}</div>
-                    </div>`;
-                document.getElementById('toast-container').insertAdjacentHTML('beforeend', toastHTML);
-                setTimeout(() => document.getElementById(toastId)?.remove(), 4000);
-            };
-
-            const logHistory = (message) => {
-                const time = new Date().toLocaleTimeString();
-                historyList.innerHTML += `<div><span class="text-muted small">${time}:</span> ${message}</div>`;
-                historyList.scrollTop = historyList.scrollHeight; // Auto-scroll
-            };
-
-            const renderProfileSkeleton = () => {
-                userProfileContent.innerHTML = `
-                    <div class="profile-card">
-                        <div class="profile-header">
-                            <div class="profile-avatar skeleton skeleton-avatar"></div>
-                            <div class="profile-info">
-                                <p class="profile-role skeleton skeleton-text" style="width: 40%;"></p>
-                                <hr class="profile-divider">
-                                <h3 class="profile-name skeleton skeleton-text" style="height: 1.2rem; width: 80%;"></h3>
-                                <div class="profile-details">
-                                    <span class="skeleton skeleton-text" style="width: 90%;"></span><span class="skeleton skeleton-text" style="width: 60%;"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="profile-program skeleton skeleton-text" style="width: 100%; margin-top: 1rem;"></p>
-                    </div>`;
-            };
-            const renderElementsSkeleton = (count = 3) => {
-                let skeletonHTML = '';
-                for (let i = 0; i < count; i++) {
-                    skeletonHTML += `
-                        <div class="element-item skeleton-item">
-                            <div class="skeleton element-image"></div>
-                            <div class="element-details">
-                                <div class="skeleton skeleton-text" style="width: 80%;"></div>
-                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
-                            </div>
-                        </div>`;
+            if (storedUser) {
+                try {
+                    localUser = JSON.parse(storedUser);
+                } catch {
+                    localUser = null;
                 }
-                return skeletonHTML;
-            };
+            }
 
-            const renderProfileData = (usuario) => {
-                 userProfileContent.innerHTML = `
-                    <div class="profile-card">
-                        <div class="profile-header">
-                            <div class="profile-avatar">
-                                <img src="${usuario.avatarUrl || 'https://placehold.co/80x80/666/fff?text=' + usuario.nombre.charAt(0)}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">
-                            </div>
-                            <div class="profile-info">
-                                <p class="profile-role">${usuario.rol || 'Rol no definido'}</p>
-                                <hr class="profile-divider">
-                                <h3 class="profile-name">${usuario.nombre || 'Nombre no disponible'}</h3>
-                                <div class="profile-details">
-                                    <span><strong>N° Id:</strong> ${usuario.documento || 'N/A'}</span>
-                                    <span><strong>N° ficha:</strong> ${usuario.ficha || 'N/A'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="profile-program">${usuario.programa || 'Programa no disponible'}</p>
-                    </div>`;
-            };
+            const rol = decoded?.role
+                || decoded?.Rol
+                || decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+                || localUser?.Rol
+                || localUser?.rol
+                || null;
 
-            const renderRegisteredElements = (elementos) => {
-                registeredElementsList.innerHTML = '';
-                if (elementos && elementos.length > 0) {
-                    const truncate = (text, maxLength) => (!text || text.length <= maxLength) ? (text || 'N/A') : text.substring(0, maxLength) + '...';
+            return typeof rol === 'string' ? rol.trim().toLowerCase() : null;
+        }
 
-                    elementos.forEach(el => {
-                        const imageUrl = el.imageUrl || 'https://placehold.co/64x64/eee/ccc?text=Sin+Img';
-                        const itemHTML = `
-                            <div class="element-item" id="reg-el-${el.idElemento}">
-                                <img class="element-image" src="${imageUrl}" alt="${el.nombreElemento}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/64x64/eee/ccc?text=Error';">
-                                <div class="element-details">
-                                    <strong>${el.nombreElemento}</strong>
-                                    <p class="text-muted small mb-1"><strong>Marca:</strong> ${el.marca || 'N/A'} | <strong>S/N:</strong> ${el.serial || 'N/A'}</p>
-                                    <p class="text-muted small mb-1" title="${el.caracteristicasTecnicas || ''}"><strong>Técnicas:</strong> ${truncate(el.caracteristicasTecnicas, 40)}</p>
-                                    <p class="text-muted small mb-1" title="${el.caracteristicasFisicas || ''}"><strong>Físicas:</strong> ${truncate(el.caracteristicasFisicas, 40)}</p>
-                                    <p class="text-muted small mb-0" title="${el.detalles || ''}"><strong>Detalles:</strong> ${truncate(el.detalles, 40)}</p>
-                                </div>
-                                <button class="manual-add-btn" data-element-id="${el.idElemento}" title="Agregar manualmente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-circle-fill" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/></svg>
-                                </button>
-                            </div>`;
-                        registeredElementsList.insertAdjacentHTML('beforeend', itemHTML);
-                    });
+        const rolActivo = obtenerRolActivo();
+        if (rolActivo !== 'guardia') {
+            window.location.replace('/Admin/Usuarios');
+            return;
+        }
+
+        document.documentElement.classList.remove('guard-check-pending');
+    })();
+</script>
+<script>
+    /* =============================================================================
+       🎯 CONFIGURACIÓN Y VARIABLES GLOBALES
+    ============================================================================= */
+
+    const HUB_URL = `${window.location.origin}/nfcHub`;
+
+    const API = {
+        aprendiz: id => `/api/Aprendiz/${id}`,
+        usuario: id => `/api/Usuario/${id}`,
+        tipos: () => `/api/TipoElementoes`,
+        owner: (tipo, id) => `/api/Elementoes/byOwner/${tipo}/${id}`,
+        crearElem: () => `/api/Elementoes`,
+        byProceso: (p) => `/api/ElementoProcesoes/byProceso/${p}`,
+        autoRegister: () => `/api/ElementoProcesoes/autoRegister`,
+        vincular: () => `/api/ElementoProcesoes`,
+        desvincular: id => `/api/ElementoProcesoes/${id}`,
+        procesoActivo: (tipo, id) => `/api/Procesoes/activo/${tipo}/${id}`
+    };
+
+    // 🔥 Variables de estado del proceso actual
+    let procesoActualId = null;
+    let tipoPersonaActual = null;
+    let idPropietarioActual = null;
+    let modoActual = null; // "Ingreso" o "Salida"
+    let nombreUsuarioActual = null;
+
+    /* =============================================================================
+       🎨 ELEMENTOS DOM
+    ============================================================================= */
+
+    const ownerContainer = document.getElementById("user-owner-devices");
+    const processContainer = document.getElementById("user-process-devices");
+    const profileDiv = document.getElementById("user-profile-content");
+    const lastDetected = document.getElementById("last-detected-item-content");
+    const historyList = document.getElementById("history-list");
+    const btnAddDevice = document.getElementById("btnAddDevice");
+    const modalUserData = document.getElementById("modalUserData");
+    const modalUserDevices = document.getElementById("modal-user-devices");
+    const selTipoElemento = document.getElementById("selTipoElemento");
+    const inpSerial = document.getElementById("inpSerial");
+    const inpMarca = document.getElementById("inpMarca");
+    const inpModelo = document.getElementById("inpModelo");
+    const inpDescripcion = document.getElementById("inpDescripcion");
+
+    /* =============================================================================
+       🍞 SISTEMA DE TOASTS
+    ============================================================================= */
+
+    function showToast(msg, type = "info") {
+        const div = document.createElement("div");
+        div.className = `toast text-bg-${type} show`;
+        div.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${msg}</div>
+                <button class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.getElementById("toast-container").appendChild(div);
+        setTimeout(() => div.remove(), 5000);
+    }
+
+    /* =============================================================================
+       🧹 LIMPIAR PROCESO
+    ============================================================================= */
+
+    function limpiarProceso() {
+        procesoActualId = null;
+        tipoPersonaActual = null;
+        idPropietarioActual = null;
+        modoActual = null;
+        nombreUsuarioActual = null;
+
+        ownerContainer.innerHTML = `<p class="text-center text-muted">Sin dispositivos.</p>`;
+        processContainer.innerHTML = `<p class="text-center text-muted">No hay dispositivos en proceso.</p>`;
+        profileDiv.innerHTML = `<div class="text-muted">Esperando lectura...</div>`;
+        lastDetected.innerHTML = `<p class="text-muted">Esperando escaneo...</p>`;
+        btnAddDevice.disabled = true;
+    }
+
+    /* =============================================================================
+       ✅ VALIDACIÓN DEL PROCESO
+    ============================================================================= */
+
+    function validarProceso(proceso) {
+        if (!proceso) return false;
+        const tipo = proceso.tipoPersona || proceso.TipoPersona;
+        if (tipo === "Aprendiz") return !!(proceso.idAprendiz || proceso.IdAprendiz);
+        if (tipo === "Usuario") return !!(proceso.idUsuario || proceso.IdUsuario);
+        return false;
+    }
+
+    /* =============================================================================
+       👤 MAPEAR PERSONA (Aprendiz o Usuario)
+    ============================================================================= */
+
+    function mapPersona(tipo, data) {
+        const nombre = data.nombre || data.Nombre || "";
+        const apellido = data.apellido || data.Apellido || "";
+        const tipoDoc = data.tipoDocumento || data.TipoDocumento || "";
+        const numDoc = data.numeroDocumento || data.NumeroDocumento || "";
+        const correo = data.correo || data.Correo || "";
+        const codigo = data.codigoBarras || data.CodigoBarras || "N/A";
+
+        let extra = "";
+        if (tipo === "Aprendiz") {
+            const fichaData = data.ficha || data.Ficha;
+            const codigoFicha = fichaData?.codigo || fichaData?.Codigo || "N/A";
+            const programaData = fichaData?.programa || fichaData?.Programa;
+            const nombrePrograma = programaData?.nombrePrograma || programaData?.NombrePrograma || "N/A";
+            extra = `🎓 Aprendiz<br>📚 Ficha: ${codigoFicha}<br>🎯 ${nombrePrograma}`;
+        } else {
+            const rol = data.rol || data.Rol || "Funcionario";
+            const cargo = data.cargo || data.Cargo;
+            extra = `👔 ${rol}${cargo ? `<br>💼 ${cargo}` : ''}`;
+        }
+
+        return {
+            nombreCompleto: `${nombre} ${apellido}`,
+            documento: `${tipoDoc} ${numDoc}`,
+            correo: correo,
+            codigo: codigo,
+            extra: extra
+        };
+    }
+
+    /* =============================================================================
+       🤖 AUTO-REGISTRAR DISPOSITIVOS (SOLO EN INGRESO)
+    ============================================================================= */
+
+    async function autoRegistrarDispositivos() {
+        if (modoActual !== "Ingreso") {
+            console.log("⏭️ Modo Salida detectado - No se auto-registran dispositivos");
+            return;
+        }
+
+        console.log("🤖 Iniciando auto-registro de dispositivos...");
+
+        try {
+            const response = await fetch(API.autoRegister(), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    idProceso: procesoActualId,
+                    tipoPropietario: tipoPersonaActual,
+                    idPropietario: idPropietarioActual
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log(`✅ Auto-registro completado:`, result);
+
+                if (result.registrados > 0) {
+                    showToast(`✅ ${result.registrados} dispositivo(s) registrado(s) automáticamente`, "success");
                 } else {
-                    registeredElementsList.innerHTML = '<p class="text-muted text-center">Este usuario no tiene elementos activos registrados.</p>';
+                    console.log("ℹ️ No hay dispositivos nuevos para registrar");
                 }
-            };
 
-            const addElementoDetectado = (elementId, source) => {
-                if (!usuarioActual || elementosDetectados.has(elementId)) return;
-                const elementoData = usuarioActual.elementos.find(el => el.idElemento === elementId);
-                if (!elementoData) return;
+                await cargarDispositivosProceso();
+            } else {
+                console.error("❌ Error en auto-registro:", response.statusText);
+            }
+        } catch (error) {
+            console.error("❌ Excepción en auto-registro:", error);
+        }
+    }
 
-                elementosDetectados.add(elementId);
-                logHistory(`Elemento '${elementoData.nombreElemento}' añadido (${source.toUpperCase()}).`);
+    /* =============================================================================
+       📊 MOSTRAR PERFIL + ACTIVAR PROCESO
+    ============================================================================= */
 
-                const placeholder = detectedElementsList.querySelector('p.text-muted');
-                if (placeholder) placeholder.remove();
+    async function showProfile(persona, tipoPersona, proceso, registro) {
+        tipoPersonaActual = tipoPersona;
+        procesoActualId = proceso.idProceso || proceso.IdProceso;
+        modoActual = registro.tipoRegistro || registro.TipoRegistro;
+        nombreUsuarioActual = persona.nombreCompleto;
 
-                const tagClass = source === 'nfc' ? 'tag-nfc' : 'tag-manual';
-                const tagText = source === 'nfc' ? 'NFC' : 'Manual';
-                const imageUrl = elementoData.imageUrl || 'https://placehold.co/64x64/eee/ccc?text=Sin+Img';
+        idPropietarioActual = tipoPersona === "Aprendiz"
+            ? (proceso.idAprendiz || proceso.IdAprendiz)
+            : (proceso.idUsuario || proceso.IdUsuario);
 
-                const itemHTML_Base = `
-                    <img class="element-image" src="${imageUrl}" alt="${elementoData.nombreElemento}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/64x64/eee/ccc?text=Error';">
-                    <div class="element-details">
-                        <strong>${elementoData.nombreElemento}</strong>
-                        <p class="text-muted small">S/N: ${elementoData.serial || 'N/A'}</p>
+        console.log(`🎯 Proceso activado: ID=${procesoActualId}, Modo=${modoActual}, Tipo=${tipoPersona}, Propietario=${idPropietarioActual}`);
+
+        const esIngreso = modoActual === "Ingreso";
+        const iconoPersona = esIngreso ? "person-check-fill" : "person-dash-fill";
+        const colorBadge = esIngreso ? "success" : "warning";
+        const iconoBadge = esIngreso ? "🟢" : "🟠";
+
+        profileDiv.innerHTML = `
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <i class="bi bi-${iconoPersona}"></i>
+                </div>
+                <div style="flex:1">
+                    <strong style="font-size:1.3rem">${persona.nombreCompleto}</strong><br>
+                    <span class="badge bg-${colorBadge} fs-6">
+                        ${iconoBadge} ${modoActual.toUpperCase()}
+                    </span>
+                    <div class="profile-details mt-2">
+                        📄 ${persona.documento}<br>
+                        ✉️ ${persona.correo}<br>
+                        ${persona.extra}<br>
+                        🧾 Código: ${persona.codigo}
                     </div>
-                    <span class="entry-method-tag ${tagClass}">${tagText}</span>`;
+                </div>
+            </div>
+        `;
 
-                const itemHTML_ListaPrincipal = `
-                    <div class="element-item" id="det-el-${elementoData.idElemento}">
-                        <button class="revert-btn" data-element-id="${elementoData.idElemento}" title="Retirar elemento">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/></svg>
-                        </button>
-                        ${itemHTML_Base}
-                    </div>`;
+        // 🔒 Solo permitir agregar dispositivos en INGRESO
+        btnAddDevice.disabled = !esIngreso;
 
-                const itemHTML_UltimoElemento = `<div class="element-item">${itemHTML_Base}</div>`;
+        addHistory(modoActual, registro.fechaRegistro || new Date(), persona.nombreCompleto);
 
-                if (source === 'nfc') {
-                    lastDetectedItemContent.innerHTML = itemHTML_UltimoElemento;
-                }
-                detectedElementsList.insertAdjacentHTML('beforeend', itemHTML_ListaPrincipal);
+        // 🔥 AUTO-REGISTRAR DISPOSITIVOS (solo en ingreso)
+        await autoRegistrarDispositivos();
 
-                document.getElementById(`reg-el-${elementId}`)?.classList.add('highlighted');
-                actualizarEstadoBotones();
-            };
+        // Cargar dispositivos
+        await cargarDispositivosUsuario();
+        await cargarDispositivosProceso();
+    }
 
-            const revertirElemento = (elementId) => {
-                if (!elementosDetectados.has(elementId)) return;
-                elementosDetectados.delete(elementId);
+    /* =============================================================================
+       📦 DISPOSITIVOS REGISTRADOS DEL USUARIO (Todos los que tiene)
+    ============================================================================= */
 
-                const elementoDetectado = document.getElementById(`det-el-${elementId}`);
-                if(elementoDetectado) {
-                    logHistory(`Elemento '${elementoDetectado.querySelector('strong').textContent}' revertido.`);
-                    elementoDetectado.remove();
-                }
+    async function cargarDispositivosUsuario() {
+        try {
+            console.log(`📦 Cargando dispositivos registrados de ${tipoPersonaActual} ID: ${idPropietarioActual}`);
 
-                document.getElementById(`reg-el-${elementId}`)?.classList.remove('highlighted');
+            const res = await fetch(API.owner(tipoPersonaActual, idPropietarioActual));
 
-                if (elementosDetectados.size === 0) {
-                    detectedElementsList.innerHTML = '<p class="text-muted text-center">Inicie un proceso para ver los datos.</p>';
-                }
-                actualizarEstadoBotones();
-            };
-
-            async function fetchUserData(userId, firstElementId) {
-                renderProfileSkeleton();
-                registeredElementsList.innerHTML = renderElementsSkeleton();
-                logHistory(`Recibido tag inicial. Obteniendo datos del usuario ID: ${userId}...`);
-
-                try {
-                    const response = await fetch(`${getUserDataUrl}?idUsuario=${userId}`);
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.mensaje || `Error del servidor: ${response.status}`);
-                    }
-                    usuarioActual = await response.json();
-                    renderProfileData(usuarioActual);
-                    renderRegisteredElements(usuarioActual.elementos);
-                    addElementoDetectado(firstElementId, 'nfc');
-                    logHistory(`Datos de <strong>${usuarioActual.nombre}</strong> cargados con éxito.`);
-                    showToast(`Usuario ${usuarioActual.nombre} cargado.`, 'success');
-                } catch (error) {
-                    console.error("Error al obtener datos del usuario:", error);
-                    userProfileContent.innerHTML = `<p class="text-danger text-center">Error al cargar el usuario. ${error.message}</p>`;
-                    logHistory(`<strong>Error:</strong> ${error.message}`);
-                    showToast(error.message, 'error');
-                    reiniciarProceso(false);
-                }
+            if (!res.ok) {
+                ownerContainer.innerHTML = `<p class="text-muted text-center">Sin dispositivos registrados.</p>`;
+                return;
             }
 
-            const reiniciarProceso = (limpiarUsuario = true) => {
-                logHistory('Proceso reiniciado.');
-                esProcesoActivo = false;
-                if (limpiarUsuario) usuarioActual = null;
-                elementosDetectados.clear();
+            const dispositivos = await res.json();
+            console.log(`✅ ${dispositivos.length} dispositivos encontrados`);
 
-                btnNuevoProceso.textContent = "Iniciar Proceso";
-                btnNuevoProceso.disabled = false;
+            if (dispositivos.length === 0) {
+                ownerContainer.innerHTML = `<p class="text-muted text-center">Sin dispositivos registrados.</p>`;
+                return;
+            }
 
-                if (limpiarUsuario) {
-                    userProfileContent.innerHTML = '<p class="text-muted text-center">Inicie un proceso para ver los datos.</p>';
-                    registeredElementsList.innerHTML = '<p class="text-muted text-center">Inicie un proceso para ver los datos.</p>';
-                }
-                detectedElementsList.innerHTML = '<p class="text-muted text-center">Inicie un proceso para ver los datos.</p>';
-                lastDetectedItemContent.innerHTML = '<p class="text-muted text-center small mt-2">Esperando escaneo...</p>';
-                actualizarEstadoBotones();
-            };
+            ownerContainer.innerHTML = dispositivos.map(d => {
+                const tipoElem = d.tipoElemento || d.TipoElemento || {};
+                const tipoNombre = tipoElem.tipo || tipoElem.Tipo || "Dispositivo";
 
-            const actualizarEstadoBotones = () => {
-                const hayElementos = elementosDetectados.size > 0;
-                btnEjecutar.disabled = !hayElementos;
-                btnReiniciar.disabled = !esProcesoActivo;
-            };
+                return `
+                    <div class="device-item">
+                        <div class="device-icon">
+                            <i class="bi bi-${getIconoDispositivo(tipoNombre)}"></i>
+                        </div>
+                        <div>
+                            <strong class="device-name">${tipoNombre}</strong><br>
+                            <span class="device-details">
+                                ${d.marca ? `<strong>${d.marca}</strong> ` : ''}
+                                ${d.modelo || ''}<br>
+                                📟 Serial: ${d.serial || 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join("");
 
-            btnNuevoProceso.addEventListener('click', () => {
-                esProcesoActivo = true;
-                btnNuevoProceso.textContent = "Proceso Activo...";
-                btnNuevoProceso.disabled = true;
-                actualizarEstadoBotones();
-                logHistory("<strong>Nuevo proceso iniciado.</strong> Esperando tag...");
-                showToast('Proceso iniciado. Esperando escaneo de tag.', 'info');
+        } catch (error) {
+            console.error("❌ Error cargando dispositivos del usuario:", error);
+            ownerContainer.innerHTML = `<p class="text-danger text-center">Error al cargar dispositivos</p>`;
+        }
+    }
+
+    /* =============================================================================
+       🔧 DISPOSITIVOS EN PROCESO ACTUAL (Solo los del ingreso/salida)
+    ============================================================================= */
+
+    async function cargarDispositivosProceso() {
+        try {
+            console.log(`📦 Cargando dispositivos del proceso ${procesoActualId}...`);
+
+            const res = await fetch(API.byProceso(procesoActualId));
+
+            if (!res.ok) {
+                console.error(`❌ Error HTTP ${res.status}: ${res.statusText}`);
+                processContainer.innerHTML = `<p class="text-danger text-center">Error al cargar dispositivos del proceso.</p>`;
+                return;
+            }
+
+            const lista = await res.json();
+            console.log(`📊 Dispositivos en proceso: ${lista.length}`);
+
+            if (lista.length === 0) {
+                const esIngreso = modoActual === "Ingreso";
+                processContainer.innerHTML = `
+                    <div class="alert alert-${esIngreso ? 'info' : 'warning'} text-center mb-0">
+                        <i class="bi bi-${esIngreso ? 'info-circle' : 'exclamation-triangle'}"></i>
+                        ${esIngreso
+                            ? "No hay dispositivos registrados. Usa el botón de abajo para agregar."
+                            : "⚠️ No se detectaron dispositivos del ingreso. Verifica que sea el proceso correcto."}
+                    </div>
+                `;
+                return;
+            }
+
+            processContainer.innerHTML = lista.map(ep => {
+                const d = ep.elemento || ep.Elemento || {};
+                const relId = ep.idElementoProceso || ep.IdElementoProceso;
+                const tipoElemento = d.tipoElemento || d.TipoElemento || {};
+                const tipoNombre = tipoElemento.tipo || tipoElemento.Tipo || "Dispositivo";
+
+                const esSalida = modoActual === "Salida";
+
+                return `
+                    <div class="device-item">
+                        <div class="device-icon">
+                            <i class="bi bi-${getIconoDispositivo(tipoNombre)}"></i>
+                        </div>
+                        <div style="flex:1">
+                            <strong class="device-name">${tipoNombre}</strong><br>
+                            <span class="device-details">
+                                ${d.marca ? `<strong>${d.marca}</strong> ` : ''}
+                                ${d.modelo || ''}<br>
+                                📟 Serial: ${d.serial || 'N/A'}
+                            </span>
+                        </div>
+                        ${esSalida ? `
+                            <button class="btn btn-danger btn-sm" onclick="removeFromProcess(${relId})"
+                                    title="No lo saqué (dejarlo en SENA)">
+                                <i class="bi bi-x-circle"></i> No lo saqué
+                            </button>
+                        ` : `
+                            <button class="btn btn-outline-danger btn-sm" onclick="removeFromProcess(${relId})"
+                                    title="Quitar del proceso">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        `}
+                    </div>
+                `;
+            }).join("");
+
+        } catch (error) {
+            console.error("❌ Error cargando dispositivos del proceso:", error);
+            processContainer.innerHTML = `<p class="text-danger text-center">Error de conexión</p>`;
+        }
+    }
+
+    /* =============================================================================
+       🎨 ICONO SEGÚN TIPO DE DISPOSITIVO
+    ============================================================================= */
+
+    function getIconoDispositivo(tipo) {
+        const iconos = {
+            'Portátil': 'laptop',
+            'Computador': 'pc-display',
+            'PC': 'pc-display',
+            'Tablet': 'tablet',
+            'Mouse': 'mouse',
+            'Teclado': 'keyboard',
+            'Cargador': 'plug',
+            'Celular': 'phone',
+            'Teléfono': 'phone',
+            'Audífonos': 'headphones',
+            'Audífono': 'headphones',
+            'Monitor': 'display',
+            'Impresora': 'printer',
+            'USB': 'usb-drive',
+            'Disco Duro': 'device-hdd',
+            'Cámara': 'camera'
+        };
+
+        return iconos[tipo] || 'hdd';
+    }
+
+    /* =============================================================================
+       ❌ QUITAR DISPOSITIVO DEL PROCESO
+    ============================================================================= */
+
+    async function removeFromProcess(relId) {
+        const mensaje = modoActual === "Salida"
+            ? "¿Confirmar que NO sacaste este dispositivo del SENA?"
+            : "¿Quitar este dispositivo del proceso actual?";
+
+        if (!confirm(mensaje)) return;
+
+        try {
+            const res = await fetch(API.desvincular(relId), { method: "DELETE" });
+
+            if (res.ok) {
+                showToast("✅ Dispositivo removido del proceso", "warning");
+                await cargarDispositivosProceso();
+            } else {
+                showToast("❌ Error al quitar dispositivo", "danger");
+            }
+        } catch (error) {
+            console.error("❌ Error eliminando dispositivo:", error);
+            showToast("❌ Error de conexión", "danger");
+        }
+    }
+
+    /* =============================================================================
+       📝 MODAL - CARGAR DATOS
+    ============================================================================= */
+
+    document.getElementById("modalAddDevice").addEventListener("show.bs.modal", async () => {
+        modalUserData.innerHTML = "Cargando...";
+        modalUserDevices.innerHTML = `<p class="text-muted text-center">Cargando...</p>`;
+
+        if (!idPropietarioActual) {
+            modalUserData.innerHTML = `<span class="text-danger">⚠️ No hay usuario cargado</span>`;
+            return;
+        }
+
+        modalUserData.innerHTML = `
+            <strong>${nombreUsuarioActual}</strong><br>
+            <span class="badge bg-primary">${tipoPersonaActual}</span>
+        `;
+
+        await cargarDispositivosModal();
+    });
+
+    /* =============================================================================
+       📋 MODAL - DISPOSITIVOS EXISTENTES
+    ============================================================================= */
+
+    async function cargarDispositivosModal() {
+        try {
+            const res = await fetch(API.owner(tipoPersonaActual, idPropietarioActual));
+
+            if (!res.ok) {
+                modalUserDevices.innerHTML = `<p class="text-muted text-center">Sin dispositivos.</p>`;
+                return;
+            }
+
+            const dispositivos = await res.json();
+
+            modalUserDevices.innerHTML = dispositivos.length === 0
+                ? `<p class="text-muted text-center">Sin dispositivos registrados.</p>`
+                : dispositivos.map(d => {
+                    const tipoElem = d.tipoElemento || d.TipoElemento || {};
+                    const tipoNombre = tipoElem.tipo || tipoElem.Tipo || "Dispositivo";
+
+                    return `
+                        <div class="device-item">
+                            <div class="device-icon">
+                                <i class="bi bi-${getIconoDispositivo(tipoNombre)}"></i>
+                            </div>
+                            <div>
+                                <strong>${tipoNombre}</strong><br>
+                                ${d.marca || ''} ${d.modelo || ''}<br>
+                                Serial: ${d.serial || 'N/A'}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+
+        } catch (error) {
+            console.error("❌ Error cargando dispositivos del modal:", error);
+            modalUserDevices.innerHTML = `<p class="text-danger text-center">Error al cargar</p>`;
+        }
+    }
+
+    /* =============================================================================
+       ➕ CREAR NUEVO DISPOSITIVO
+    ============================================================================= */
+
+    document.getElementById("btnGuardarDevice").onclick = async () => {
+        if (!selTipoElemento.value || !inpSerial.value.trim()) {
+            showToast("⚠️ Complete los campos obligatorios (Tipo y Serial)", "danger");
+            return;
+        }
+
+        const payload = {
+            idTipoElemento: Number(selTipoElemento.value),
+            idPropietario: idPropietarioActual,
+            tipoPropietario: tipoPersonaActual,
+            marca: inpMarca.value.trim(),
+            modelo: inpModelo.value.trim(),
+            serial: inpSerial.value.trim().toUpperCase(),
+            descripcion: inpDescripcion.value.trim()
+        };
+
+        try {
+            const res = await fetch(API.crearElem(), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
             });
 
-            btnReiniciar.addEventListener('click', () => reiniciarProceso(true));
+            if (res.ok) {
+                const nuevoElemento = await res.json();
+                console.log("✅ Dispositivo creado:", nuevoElemento);
 
-            btnEjecutar.addEventListener('click', async () => {
-                if (elementosDetectados.size === 0) return;
+                showToast("✅ Dispositivo creado exitosamente", "success");
 
-                const datosParaEnviar = {
-                    idUsuario: usuarioActual.idUsuario,
-                    elementos: Array.from(elementosDetectados),
-                    tipoProceso: tipoProcesoSeleccionado
-                };
+                // Vincular automáticamente al proceso si es INGRESO
+                if (modoActual === "Ingreso") {
+                    const idElemento = nuevoElemento.idElemento || nuevoElemento.IdElemento;
 
-                logHistory(`Ejecutando proceso de <strong>${tipoProcesoSeleccionado.toUpperCase()}</strong>...`);
-                btnEjecutar.disabled = true;
-                btnEjecutar.textContent = 'Procesando...';
-
-                try {
-                    const response = await fetch(finalizarProcesoUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(datosParaEnviar)
+                    await fetch(API.vincular(), {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            idElemento: idElemento,
+                            idProceso: procesoActualId,
+                            validado: true
+                        })
                     });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.mensaje || 'Error del servidor.');
 
-                    showToast(result.mensaje, 'success');
-                    logHistory(`<strong>Éxito:</strong> ${result.mensaje}`);
-                    reiniciarProceso(true);
-                } catch (error) {
-                    console.error("Error al ejecutar el proceso:", error);
-                    showToast(error.message, 'error');
-                    logHistory(`<strong>Error al ejecutar:</strong> ${error.message}`);
-                    btnEjecutar.textContent = 'Ejecutar Proceso';
-                    actualizarEstadoBotones();
+                    console.log("✅ Dispositivo vinculado al proceso automáticamente");
                 }
-            });
 
-            detectedElementsList.addEventListener('click', (event) => {
-                const revertButton = event.target.closest('.revert-btn');
-                if (revertButton) {
-                    revertirElemento(parseInt(revertButton.dataset.elementId, 10));
-                }
-            });
+                // Limpiar formulario
+                inpSerial.value = "";
+                inpMarca.value = "";
+                inpModelo.value = "";
+                inpDescripcion.value = "";
 
-            radiosTipoProceso.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    tipoProcesoSeleccionado = this.id === 'btnEntrada' ? 'entrada' : 'salida';
-                    logHistory(`Tipo de proceso cambiado a: ${tipoProcesoSeleccionado.toUpperCase()}`);
-                });
-            });
+                // Recargar vistas
+                await cargarDispositivosUsuario();
+                await cargarDispositivosProceso();
+                await cargarDispositivosModal();
 
-            registeredElementsList.addEventListener('click', (event) => {
-                const button = event.target.closest('.manual-add-btn');
-                if (button) {
-                    if (esProcesoActivo && usuarioActual) {
-                        addElementoDetectado(parseInt(button.dataset.elementId, 10), 'manual');
-                    } else {
-                        showToast("Por favor, inicie un proceso y escanee un tag del usuario primero.", 'warning');
-                    }
-                }
-            });
-
-            const connection = new signalR.HubConnectionBuilder().withUrl("/nfcHub").withAutomaticReconnect().build();
-            connection.on("RecibirDatosTag", (tagData) => {
-                if (!esProcesoActivo) return;
-                const [idUsuario, idElemento] = tagData.split(',').map(Number);
-                if (isNaN(idUsuario) || isNaN(idElemento)) return;
-
-                if (!usuarioActual) {
-                    fetchUserData(idUsuario, idElemento);
-                } else if (idUsuario === usuarioActual.idUsuario) {
-                    addElementoDetectado(idElemento, 'nfc');
-                } else {
-                    showToast('Tag de un usuario diferente detectado. Reinicie el proceso para cambiar de usuario.', 'warning');
-                    logHistory(`Tag de usuario incorrecto (ID: ${idUsuario}) detectado.`);
-                }
-            });
-
-            async function startSignalR() {
-                 try {
-                    await connection.start();
-                    console.log("Conectado a SignalR.");
-                    logHistory("Conexión con el agente NFC establecida.");
-                 } catch (err) {
-                    console.error("Error de conexión con SignalR:", err);
-                    logHistory("<strong>Error:</strong> No se pudo conectar con el agente NFC.");
-                    showToast('No se pudo conectar con el agente Lector. Verifique que esté en ejecución y recargue la página.', 'error');
-                    setTimeout(startSignalR, 5000);
-                 }
+                // Cerrar modal
+                bootstrap.Modal.getInstance(document.getElementById("modalAddDevice")).hide();
+            } else {
+                const error = await res.json();
+                showToast(error.message || "❌ Error al crear dispositivo", "danger");
             }
-            startSignalR();
-            actualizarEstadoBotones();
-            logHistory("Dashboard inicializado. Listo para iniciar un proceso.");
-        });
-    </script>
-}
+        } catch (error) {
+            console.error("❌ Error creando dispositivo:", error);
+            showToast("❌ Error de conexión", "danger");
+        }
+    };
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/terminal.css" />
-}
+    /* =============================================================================
+       🎛️ CARGAR TIPOS DE DISPOSITIVOS
+    ============================================================================= */
+
+    async function cargarTipos() {
+        try {
+            const res = await fetch(API.tipos());
+            const tipos = await res.json();
+
+            selTipoElemento.innerHTML = tipos.map(t =>
+                `<option value="${t.idTipoElemento || t.IdTipoElemento}">
+                    ${t.tipo || t.Tipo}
+                </option>`
+            ).join("");
+
+            console.log(`✅ ${tipos.length} tipos de dispositivos cargados`);
+        } catch (error) {
+            console.error("❌ Error cargando tipos:", error);
+            selTipoElemento.innerHTML = `<option value="">Error al cargar tipos</option>`;
+        }
+    }
+
+    cargarTipos();
+
+    /* =============================================================================
+       📡 SIGNALR - LECTURA NFC AUTOMÁTICA
+    ============================================================================= */
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl(HUB_URL)
+        .withAutomaticReconnect([0, 2000, 5000, 10000])
+        .build();
+
+    connection.on("OperacionProcesada", async raw => {
+        console.log("📡 Evento recibido desde SignalR:", raw);
+
+        limpiarProceso();
+
+        const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
+        const proceso = payload.proceso || payload.Proceso;
+        const registro = payload.registro || payload.Registro;
+
+        if (!validarProceso(proceso)) {
+            console.error("❌ Datos de proceso inválidos:", proceso);
+            showToast("❌ Datos inválidos recibidos del servidor", "danger");
+            return;
+        }
+
+        const tipo = proceso.tipoPersona || proceso.TipoPersona;
+        const id = tipo === "Aprendiz"
+            ? (proceso.idAprendiz || proceso.IdAprendiz)
+            : (proceso.idUsuario || proceso.IdUsuario);
+
+        try {
+            const data = await (await fetch(
+                tipo === "Aprendiz" ? API.aprendiz(id) : API.usuario(id)
+            )).json();
+
+            const persona = mapPersona(tipo, data);
+            await showProfile(persona, tipo, proceso, registro);
+
+            const tipoReg = registro.tipoRegistro || registro.TipoRegistro;
+            const esIngreso = tipoReg === "Ingreso";
+
+            lastDetected.innerHTML = `
+                <div class="d-flex gap-2 align-items-center justify-content-center">
+                    <div class="device-icon">
+                        <i class="bi bi-person-check-fill text-${esIngreso ? "success" : "warning"}" style="font-size:2rem"></i>
+                    </div>
+                    <div>
+                        <strong>${persona.nombreCompleto}</strong><br>
+                        <small class="badge bg-${esIngreso ? "success" : "warning"}">
+                            ${esIngreso ? "🟢" : "🟠"} ${tipoReg}
+                        </small>
+                    </div>
+                </div>
+            `;
+
+            showToast(`✅ ${tipoReg} registrado: ${persona.nombreCompleto}`, "success");
+
+        } catch (error) {
+            console.error("❌ Error procesando datos de la persona:", error);
+            showToast("❌ Error al procesar la operación", "danger");
+        }
+    });
+
+    connection.onreconnecting(error => {
+        console.warn("⚠️ Reconectando SignalR...", error);
+        showToast("⚠️ Reconectando con el servidor...", "warning");
+    });
+
+    connection.onreconnected(connectionId => {
+        console.log("✅ SignalR reconectado:", connectionId);
+        showToast("✅ Conexión restablecida", "success");
+    });
+
+    connection.onclose(error => {
+        console.error("❌ Conexión SignalR cerrada:", error);
+        showToast("❌ Conexión perdida. Recargando página...", "danger");
+        setTimeout(() => location.reload(), 3000);
+    });
+
+    connection.start().then(() => {
+        console.log("✅ Conexión SignalR establecida correctamente");
+        showToast("🟢 Sistema NFC habilitado", "success");
+    }).catch(err => {
+        console.error("❌ Error conectando SignalR:", err);
+        showToast("❌ Error de conexión NFC. Verifique el servidor.", "danger");
+    });
+
+    /* =============================================================================
+       📜 HISTORIAL
+    ============================================================================= */
+
+    function addHistory(tipo, fecha, nombre) {
+        const item = document.createElement("div");
+        const esIngreso = tipo === "Ingreso";
+
+        item.className = `history-item ${esIngreso ? "ingreso" : "salida"}`;
+        item.innerHTML = `
+            <strong>${esIngreso ? "🟢" : "🟠"} ${tipo}</strong> — ${nombre}<br>
+            <small>${new Date(fecha).toLocaleString("es-CO", {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            })}</small>
+        `;
+
+        historyList.prepend(item);
+
+        // Limitar historial a 20 items
+        while (historyList.children.length > 20) {
+            historyList.lastChild.remove();
+        }
+    }
+
+    /* =============================================================================
+       🔄 BOTÓN NUEVO PROCESO
+    ============================================================================= */
+
+    document.getElementById("btnNuevoProceso").addEventListener("click", () => {
+        if (procesoActualId) {
+            if (!confirm("¿Desea iniciar un nuevo proceso? Se limpiará la información actual.")) {
+                return;
+            }
+        }
+        limpiarProceso();
+        showToast("🔄 Esperando nueva lectura NFC...", "info");
+        console.log("🔄 Proceso limpiado, esperando nuevo tag");
+    });
+
+
+
+
+</script>
