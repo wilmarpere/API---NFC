@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_NFC.Data;
 using API___NFC.Models;
-using BCryptNet = BCrypt.Net.BCrypt;
+
+using BCrypt.Net;
+
 
 namespace API___NFC.Controllers
 {
@@ -210,7 +212,8 @@ namespace API___NFC.Controllers
             // Evitar doble hash si ya viene en formato BCrypt
             return IsBcryptHash(password)
                 ? password
-                : BCryptNet.HashPassword(password);
+     : BCryptNet.HashPassword(password);
+
         }
 
         private static bool IsBcryptHash(string value)
